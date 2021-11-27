@@ -1,16 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pnona <pnona@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/11/20 13:55:52 by pnona             #+#    #+#             */
-/*   Updated: 2021/11/27 15:38:14 by pnona            ###   ########.fr       */
+/*   Created: 2021/11/27 14:33:40 by pnona             #+#    #+#             */
+/*   Updated: 2021/11/27 15:45:48 by pnona            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include <stdio.h>
+#include <fcntl.h>
+#include "get_next_line_bonus.h"
 
 int	check_end(char *text)
 {
@@ -105,7 +107,7 @@ char	*get_next_line(int fd)
 {
 	char		*ret_line;
 	char		*buf;
-	static char	*text;
+	static char	*text[FD_MAX_COUNT] = {0};
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
@@ -115,47 +117,33 @@ char	*get_next_line(int fd)
 		free (buf);
 		return (NULL);
 	}
-	text = copy_text_from_buf(fd, text, buf);
+	text[fd] = copy_text_from_buf(fd, text[fd], buf);
 	free (buf);
-	if (!text)
+	if (!text[fd])
 		return (NULL);
-	ret_line = create_line_without_n(text);
-	text = begin_new_line(text);
+	ret_line = create_line_without_n(text[fd]);
+	text[fd] = begin_new_line(text[fd]);
 	return (ret_line);
 }
 
-/*
-# include <stdio.h> - для printf
-# include <fcntl.h> - для open
-# include <unistd.h> - для основного
-# include <stdlib.h> - для malloc
-# include <stddef.h> - для нгапример size_t
-
 int	main(void)
 {
-	int		fd;
+	int		fd_1, fd_2;
 	char	*line;
-	
-	fd = open("text.txt", O_RDONLY);
 
+	fd_1 = open("text.txt", O_RDONLY);
+	fd_2 = open("text1.txt", O_RDONLY);
 	line = "";
 	while (line)
 	{
-		line = get_next_line(fd);
-		printf("%s", line);
+		line = get_next_line(fd_1);
+		printf("%s\n", line);
 		free(line);
-	} 
-	close(fd);
+		line = get_next_line(fd_2);
+		printf("%s\n", line);
+		free(line);
+	}
+	close(fd_1);
+	close(fd_2);
 	return (0);
-	line = get_next_line(fd);
-	printf ("%s\n\n", line);
-	line = get_next_line(fd);
-	printf ("%s\n\n", line);
-	line = get_next_line(fd);
-	printf ("%s\n\n", line);
-	line = get_next_line(fd);
-	printf ("%s\n\n", line);
-	line = get_next_line(fd);
-	printf ("%s\n\n", line);
-	return (0);
-} */
+}
